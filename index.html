@@ -515,6 +515,8 @@
     // Restaurar texto del botón por si venía de cotizar
     $('btn-step1').textContent = 'Continuar → elegir fecha';
 
+    resetSlots(); // Cambió el servicio — limpiar horarios previos
+
     if (st.tipoServicio === 'diana') {
       // Camuflaje de canas → solo Diana, autoselect
       $('stylist-sub').textContent = 'Especialista en coloración';
@@ -531,6 +533,16 @@
       renderStylists(BARBEROS.general);
     }
   }
+  function resetSlots() {
+    // Limpia horarios, deselecciona día y resetea estado de fecha/hora
+    st.fecha = null; st.hora = null;
+    $('time-card').style.display = 'none';
+    $('time-grid').innerHTML = '';
+    $('btn-step2').disabled = true;
+    // Quitar selección del día en calendario
+    document.querySelectorAll('#cal-grid .cal-day').forEach(c => c.classList.remove('selected'));
+  }
+
   function renderStylists(list) {
     const row = $('stylist-row'); row.innerHTML = '';
     list.forEach(s => {
@@ -541,6 +553,7 @@
       btn.addEventListener('click', () => {
         document.querySelectorAll('.stylist-btn').forEach(b => b.classList.remove('selected'));
         btn.classList.add('selected'); st.estilista = s.nombre; $('btn-step1').disabled = false;
+        resetSlots();
       });
       row.appendChild(btn);
     });
@@ -875,7 +888,7 @@
     else goStep(2);
   });
   $('btn-step2').addEventListener('click',   () => goStep(3));
-  $('btn-back-1').addEventListener('click',  () => goStep(1));
+  $('btn-back-1').addEventListener('click', () => { resetSlots(); goStep(1); });
   $('btn-back-2').addEventListener('click',  () => goStep(2));
   $('btn-confirmar').addEventListener('click', confirmarCita);
   $('btn-nueva-cita').addEventListener('click', nuevaCita);
