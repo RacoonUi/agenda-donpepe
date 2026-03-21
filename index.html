@@ -652,9 +652,22 @@
       const btn = document.createElement('button');
       btn.className = 'time-btn'; btn.textContent = slot;
       const taken = ocupados[slot] || [];
-      const busy = st.tipoServicio === 'tinte'
-        ? taken.includes('Diana')
-        : taken.includes('Rodrigo') && taken.includes('Javier');
+
+      // Lógica de disponibilidad por estilista individual:
+      // Diana/Camuflaje: ocupado si Diana ya tiene cita en ese slot
+      // General con estilista específico (Rodrigo o Javier): ocupado si ese estilista ya tiene cita
+      // "Cualquiera": ocupado solo si AMBOS Rodrigo y Javier están ocupados
+      let busy = false;
+      if (st.tipoServicio === 'diana' || st.tipoServicio === 'tinte') {
+        busy = taken.includes('Diana');
+      } else if (st.estilista === 'Rodrigo') {
+        busy = taken.includes('Rodrigo');
+      } else if (st.estilista === 'Javier') {
+        busy = taken.includes('Javier');
+      } else {
+        // "Cualquiera" — ocupado solo si no hay ningún barbero disponible
+        busy = taken.includes('Rodrigo') && taken.includes('Javier');
+      }
       if (busy) { btn.classList.add('busy'); btn.disabled = true; }
       else {
         btn.addEventListener('click', () => {
@@ -694,7 +707,20 @@
     const tel    = $('inp-tel').value.replace(/[^0-9]/g, '').slice(0,10);
     const notas  = $('inp-notas').value.trim();
     const tinte  = $('inp-tinte').value;
-    const estilista = st.estilista === 'Cualquiera' ? 'Rodrigo' : st.estilista;
+    // Si eligió "Cualquiera", asignar al primer barbero disponible en ese slot
+    let estilista = st.estilista;
+    if (st.estilista === 'Cualquiera') {
+      try {
+        const ocupadosSlot = await sb.get('citas',
+          'negocio_id=eq.' + st.negocioId +
+          '&fecha=eq.' + st.fecha +
+          '&hora=eq.' + st.hora + ':00' +
+          '&estado=neq.Cancelada' +
+          '&select=estilista');
+        const barbOcupados = ocupadosSlot.map(r => r.estilista);
+        estilista = barbOcupados.includes('Rodrigo') ? 'Javier' : 'Rodrigo';
+      } catch(e) { estilista = 'Rodrigo'; }
+    }
     const code = genCode();
     $('btn-confirmar').disabled = true; $('btn-confirmar').textContent = 'Guardando…';
     try {
