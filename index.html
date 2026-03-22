@@ -340,7 +340,7 @@
   // ══════════════════════════════════════════
   const SUPABASE_URL = 'https://hhfjivzmglxzboajhksx.supabase.co';
   const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhoZmppdnptZ2x4emJvYWpoa3N4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwMzcxODMsImV4cCI6MjA4OTYxMzE4M30.SD0fpbqmHNlTt4BunX2sbotzwWCqJ70TP_Gd-4WOsnU';
-  const NEGOCIO_SLUG = 'corteflow';
+  const NEGOCIO_SLUG = 'donpepe';
 
   // Mini cliente REST de Supabase (sin SDK)
   const sb = {
@@ -649,19 +649,27 @@
   async function renderTimeSlots(gridId, loadingId, slots, dateStr, mode) {
     setLoading(loadingId, true);
     const grid = $(gridId); grid.innerHTML = '';
-    let ocupados = {}; // { "11:00": ["Rodrigo"], "11:30": ["Rodrigo","Javier"] }
+    let ocupados = {};
+    let bloqueados = new Set(); // slots bloqueados por el barbero
     try {
       if (st.negocioId) {
+        // Citas existentes
         const rows = await sb.get('citas',
           'negocio_id=eq.' + st.negocioId +
           '&fecha=eq.' + dateStr +
           '&estado=neq.Cancelada' +
           '&select=hora,estilista');
         rows.forEach(r => {
-          const h = r.hora.slice(0,5); // "11:00:00" -> "11:00"
+          const h = r.hora.slice(0,5);
           if (!ocupados[h]) ocupados[h] = [];
           ocupados[h].push(r.estilista);
         });
+        // Horarios bloqueados por el barbero
+        const bloqueos = await sb.get('horarios_bloqueados',
+          'negocio_id=eq.' + st.negocioId +
+          '&fecha=eq.' + dateStr +
+          '&select=hora');
+        bloqueos.forEach(r => bloqueados.add(r.hora.slice(0,5)));
       }
     } catch(e) { showToast('Error cargando horarios', true); }
     setLoading(loadingId, false);
@@ -685,6 +693,8 @@
         // "Cualquiera" — ocupado solo si no hay ningún barbero disponible
         busy = taken.includes('Rodrigo') && taken.includes('Javier');
       }
+      // Si el slot está bloqueado por el barbero, siempre ocupado independiente del estilista
+      if (bloqueados.has(slot)) busy = true;
       if (busy) { btn.classList.add('busy'); btn.disabled = true; }
       else {
         btn.addEventListener('click', () => {
