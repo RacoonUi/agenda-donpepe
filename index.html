@@ -294,6 +294,10 @@
           <div class="summary-row"><span class="summary-label">Nombre</span><span class="summary-val" id="r-nombre">—</span></div>
         </div>
       </div>
+      <div id="pendiente-msg" style="display:none;background:rgba(201,150,58,.08);border:1px solid rgba(201,150,58,.3);border-radius:6px;padding:12px 14px;margin-bottom:8px;font-size:13px;color:#7a6e62;line-height:1.6">
+        <strong style="color:#1a1410">Cita pendiente de confirmación</strong><br>
+        Diana revisará tu solicitud y se pondrá en contacto contigo para confirmar fecha y hora. Una vez confirmada podrás reagendarla desde aquí.
+      </div>
       <button class="btn btn-outline" id="btn-toggle-reagendar">📅 Reagendar cita</button>
       <div id="reschedule-panel">
         <div class="card card-wrap" style="margin-top:12px">
@@ -775,6 +779,9 @@
   async function buscarCita() {
     const q = $('inp-buscar').value.trim().toUpperCase();
     $('cita-result').style.display = 'none'; $('cita-not-found').style.display = 'none';
+    $('reschedule-panel').classList.remove('open');
+    const pm = $('pendiente-msg'); if(pm) pm.style.display = 'none';
+    $('btn-toggle-reagendar').style.display = 'block';
     $('btn-buscar').disabled = true; $('btn-buscar').textContent = 'Buscando…';
     try {
       let rows = [];
@@ -794,6 +801,15 @@
         $('r-nombre').textContent    = c.nombre_cliente;
         $('r-estado').textContent    = c.estado;
         $('cita-result').style.display = 'block';
+
+        // Controlar visibilidad del botón reagendar según estado
+        const puedeReagendar = c.estado === 'Confirmada' || c.estado === 'Reagendada';
+        const btnReagendar = $('btn-toggle-reagendar');
+        btnReagendar.style.display = puedeReagendar ? 'block' : 'none';
+
+        // Si es pendiente, mostrar mensaje informativo
+        const pendienteMsg = $('pendiente-msg');
+        if (pendienteMsg) pendienteMsg.style.display = puedeReagendar ? 'none' : 'block';
       } else {
         $('cita-not-found').style.display = 'block';
       }
