@@ -413,7 +413,7 @@
   const rowHtml = (label, val) =>
     '<div class="summary-row"><span class="summary-label">' + label +
     '</span><span class="summary-val">' + val + '</span></div>';
-  const genCode = () => 'BP-' + Math.floor(1000 + Math.random() * 9000);
+  const genCode = () => 'BP-' + Math.floor(10000 + Math.random() * 90000);
 
   function showToast(msg, isError) {
     const t = $('toast');
@@ -865,7 +865,7 @@
       // Guardamos en Supabase como cita especial de cotización
       await sb.post('citas', {
         negocio_id: st.negocioId,
-        codigo: 'DI-' + Math.floor(1000 + Math.random() * 9000),
+        codigo: 'DI-' + Math.floor(10000 + Math.random() * 90000),
         nombre_cliente: nombre, telefono: tel,
         servicio: 'Tintes — por cotizar', estilista: 'Diana',
         fecha: new Date().toISOString().split('T')[0],
