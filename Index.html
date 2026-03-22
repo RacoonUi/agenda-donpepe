@@ -1,0 +1,951 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agenda — Demo Barbería</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink:#1a1410;--cream:#f5f0e8;--warm:#e8dfc8;--gold:#c9963a;--gold-light:#e8b84b;
+    --muted:#7a6e62;--border:#d4c9b4;--white:#fdfaf4;--success:#2d6a4f;--error:#8b1a1a;--r:6px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);min-height:100vh;font-size:15px}
+  header{background:var(--ink);color:var(--cream);padding:28px 24px 24px;text-align:center;position:relative;overflow:hidden}
+  header::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(45deg,transparent,transparent 12px,rgba(201,150,58,.06) 12px,rgba(201,150,58,.06) 13px)}
+  .header-inner{position:relative}
+  .shop-badge{display:inline-block;border:1px solid rgba(201,150,58,.4);color:var(--gold);font-size:10px;font-weight:500;letter-spacing:.14em;text-transform:uppercase;padding:4px 12px;border-radius:20px;margin-bottom:12px}
+  header h1{font-family:'Playfair Display',serif;font-size:clamp(24px,5vw,36px);color:var(--white);letter-spacing:-.01em;line-height:1.1;margin-bottom:6px}
+  header p{color:rgba(245,240,232,.6);font-size:13px;font-weight:300}
+  main{max-width:520px;margin:0 auto;padding:24px 16px 48px}
+  .steps{display:flex;align-items:center;margin-bottom:28px;background:var(--white);border:1px solid var(--border);border-radius:40px;padding:6px}
+  .step-btn{flex:1;display:flex;align-items:center;justify-content:center;gap:7px;padding:8px 10px;border-radius:30px;border:none;background:transparent;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;cursor:pointer;transition:all .2s;white-space:nowrap}
+  .step-btn.active{background:var(--ink);color:var(--cream)}
+  .step-num{width:20px;height:20px;border-radius:50%;background:var(--border);color:var(--muted);font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s}
+  .step-btn.active .step-num{background:var(--gold);color:var(--ink)}
+  .step-btn.done .step-num{background:var(--success);color:white}
+  .step-btn.done{color:var(--success)}
+  .card{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:24px;margin-bottom:16px}
+  .card-title{font-family:'Playfair Display',serif;font-size:18px;margin-bottom:4px;color:var(--ink)}
+  .card-sub{font-size:12px;color:var(--muted);margin-bottom:20px;font-weight:300}
+  .service-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .service-btn{border:1.5px solid var(--border);background:transparent;border-radius:var(--r);padding:14px 12px;text-align:left;cursor:pointer;transition:all .18s;font-family:'DM Sans',sans-serif}
+  .service-btn:hover{border-color:var(--gold);background:rgba(201,150,58,.04)}
+  .service-btn.selected{border-color:var(--gold);background:rgba(201,150,58,.08);box-shadow:0 0 0 2px rgba(201,150,58,.2)}
+  .service-name{font-size:13px;font-weight:500;color:var(--ink)}
+  .service-price{font-size:12px;color:var(--gold);font-weight:600;margin-top:2px}
+  .service-who{font-size:11px;color:var(--muted);margin-top:2px}
+  .stylist-row{display:flex;gap:10px;flex-wrap:wrap}
+  .stylist-btn{flex:1;min-width:110px;border:1.5px solid var(--border);background:transparent;border-radius:var(--r);padding:12px;text-align:center;cursor:pointer;transition:all .18s;font-family:'DM Sans',sans-serif}
+  .stylist-btn:hover{border-color:var(--gold)}
+  .stylist-btn.selected{border-color:var(--gold);background:rgba(201,150,58,.08);box-shadow:0 0 0 2px rgba(201,150,58,.2)}
+  .stylist-avatar{width:44px;height:44px;border-radius:50%;margin:0 auto 8px;display:flex;align-items:center;justify-content:center;font-size:20px;background:var(--warm)}
+  .stylist-name{font-size:13px;font-weight:500;color:var(--ink)}
+  .stylist-role{font-size:11px;color:var(--muted);margin-top:2px}
+  .cal-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+  .cal-nav button{background:none;border:1px solid var(--border);border-radius:var(--r);width:32px;height:32px;cursor:pointer;font-size:15px;color:var(--muted);display:flex;align-items:center;justify-content:center;transition:all .15s}
+  .cal-nav button:hover{border-color:var(--gold);color:var(--gold)}
+  .cal-month{font-family:'Playfair Display',serif;font-size:16px;color:var(--ink)}
+  .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center}
+  .cal-dow{font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;padding:4px 0}
+  .cal-day{aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:13px;border-radius:var(--r);cursor:pointer;transition:all .15s;border:1.5px solid transparent;color:var(--ink)}
+  .cal-day:hover:not(.disabled):not(.empty):not(.sunday){border-color:var(--gold);background:rgba(201,150,58,.08)}
+  .cal-day.selected{background:var(--ink);color:var(--cream);border-color:var(--ink)}
+  .cal-day.today{font-weight:600;color:var(--gold)}
+  .cal-day.disabled,.cal-day.empty,.cal-day.sunday{color:var(--border);cursor:default;pointer-events:none}
+  .time-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:16px}
+  .time-btn{border:1.5px solid var(--border);background:transparent;border-radius:var(--r);padding:9px 4px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;color:var(--ink);cursor:pointer;text-align:center;transition:all .15s}
+  .time-btn:hover{border-color:var(--gold);background:rgba(201,150,58,.06)}
+  .time-btn.selected{background:var(--ink);color:var(--cream);border-color:var(--ink)}
+  .time-btn.busy{color:var(--border);cursor:not-allowed;text-decoration:line-through}
+  .field{margin-bottom:14px}
+  label{display:block;font-size:12px;font-weight:500;color:var(--muted);margin-bottom:6px;letter-spacing:.03em;text-transform:uppercase}
+  input,select,textarea{width:100%;border:1.5px solid var(--border);border-radius:var(--r);padding:11px 14px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--ink);background:var(--white);transition:border-color .15s;outline:none}
+  input:focus,select:focus,textarea:focus{border-color:var(--gold)}
+  textarea{resize:vertical;min-height:72px}
+  .summary{background:var(--warm);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:20px}
+  .summary-row{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;font-size:13px}
+  .summary-row:last-child{margin-bottom:0}
+  .summary-label{color:var(--muted);font-weight:300}
+  .summary-val{font-weight:500;color:var(--ink);text-align:right;max-width:58%}
+  .btn{width:100%;padding:14px;border-radius:var(--r);border:none;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:500;cursor:pointer;transition:all .18s}
+  .btn-primary{background:var(--ink);color:var(--cream)}
+  .btn-primary:hover{background:#2d2520}
+  .btn-primary:disabled{background:var(--border);color:var(--muted);cursor:not-allowed}
+  .btn-outline{background:transparent;color:var(--ink);border:1.5px solid var(--border);margin-top:8px}
+  .btn-outline:hover{border-color:var(--gold)}
+  .btn-gold{background:var(--gold);color:var(--white)}
+  .btn-gold:hover{background:var(--gold-light);color:var(--ink)}
+  .btn-gold:disabled{background:var(--border);color:var(--muted);cursor:not-allowed}
+  .btn-danger{background:transparent;color:var(--error);border:1.5px solid rgba(139,26,26,.25);margin-top:8px}
+  .btn-danger:hover{background:rgba(139,26,26,.06);border-color:var(--error)}
+  .screen{display:none}
+  .screen.active{display:block}
+  .confirm-icon{width:64px;height:64px;border-radius:50%;background:rgba(45,106,79,.12);display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 20px}
+  .confirm-code{font-family:'Playfair Display',serif;font-size:28px;letter-spacing:.12em;color:var(--gold);text-align:center;margin:8px 0 4px}
+  .confirm-hint{font-size:12px;color:var(--muted);text-align:center;margin-bottom:20px}
+  .manage-cita{background:var(--warm);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:16px}
+  .manage-status{display:inline-block;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;padding:3px 10px;border-radius:20px;background:rgba(201,150,58,.12);color:var(--gold);margin-bottom:12px}
+  .tabs{display:flex;gap:4px;background:var(--warm);border:1px solid var(--border);border-radius:8px;padding:4px;margin-bottom:20px}
+  .tab-btn{flex:1;padding:8px;border:none;border-radius:5px;background:transparent;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;color:var(--muted);cursor:pointer;transition:all .15s}
+  .tab-btn.active{background:var(--white);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.08)}
+  .section-label{font-size:11px;font-weight:600;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:10px}
+  #reschedule-panel{display:none;margin-top:16px}
+  #reschedule-panel.open{display:block}
+  .loading-overlay{display:none;position:absolute;inset:0;background:rgba(245,240,232,.8);border-radius:12px;align-items:center;justify-content:center;font-size:13px;color:var(--muted);z-index:10}
+  .loading-overlay.show{display:flex}
+  .card-wrap{position:relative}
+  #toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--ink);color:var(--cream);padding:12px 20px;border-radius:30px;font-size:13px;font-weight:500;transition:transform .3s cubic-bezier(.34,1.56,.64,1);z-index:100;white-space:nowrap;pointer-events:none}
+  #toast.show{transform:translateX(-50%) translateY(0)}
+  #toast.error{background:var(--error)}
+</style>
+</head>
+<body>
+<header>
+  <div class="header-inner">
+    <div class="shop-badge">✦ Agenda en línea</div>
+    <h1 id="header-title">Barbería Don Pepe</h1>
+    <p>Reserva tu cita — rápido y sin llamadas</p>
+  </div>
+</header>
+
+<main>
+  <div class="tabs" style="margin-top:20px">
+    <button class="tab-btn active" id="tab-btn-nueva">Nueva cita</button>
+    <button class="tab-btn" id="tab-btn-micita">Mi cita</button>
+  </div>
+
+  <!-- TAB NUEVA CITA -->
+  <div id="tab-nueva">
+    <div class="steps" id="steps-nav">
+      <button class="step-btn active" id="sn-1"><span class="step-num">1</span> Servicio</button>
+      <button class="step-btn" id="sn-2"><span class="step-num">2</span> Fecha</button>
+      <button class="step-btn" id="sn-3"><span class="step-num">3</span> Datos</button>
+    </div>
+
+    <!-- PASO 1 -->
+    <div class="screen active" id="step-1">
+      <div class="card">
+        <div class="card-title">¿Qué servicio buscas?</div>
+        <div class="card-sub">Selecciona uno para continuar</div>
+        <div class="service-grid">
+          <button class="service-btn" data-service="Corte de cabello" data-price="$150" data-who="general">
+            <div class="service-name">Corte de cabello</div><div class="service-price">$150</div><div class="service-who">Rodrigo · Javier</div>
+          </button>
+          <button class="service-btn" data-service="Corte de cabello + barba" data-price="$220" data-who="general">
+            <div class="service-name">Corte de cabello + barba</div><div class="service-price">$220</div>
+            <div class="service-who">Rodrigo · Javier</div>
+            <div style="display:inline-block;margin-top:5px;background:#c9963a;color:#fdfaf4;font-size:10px;font-weight:600;padding:2px 7px;border-radius:10px;letter-spacing:.04em">MEJOR OFERTA</div>
+          </button>
+          <button class="service-btn" data-service="Camuflaje de canas" data-price="$180" data-who="diana">
+            <div class="service-name">Camuflaje de canas</div><div class="service-price">$180</div><div class="service-who">Tinte barba o cabello · Solo Diana</div>
+          </button>
+          <button class="service-btn" data-service="Limpieza facial" data-price="$200" data-who="general">
+            <div class="service-name">Limpieza facial</div><div class="service-price">$200</div><div class="service-who">Rodrigo · Javier</div>
+          </button>
+          <button class="service-btn" data-service="Afeitado de barba y bigote" data-price="$120" data-who="general">
+            <div class="service-name">Afeitado de barba y bigote</div><div class="service-price">$120</div><div class="service-who">Rodrigo · Javier</div>
+          </button>
+          <button class="service-btn" data-service="Tintes" data-price="A cotizar" data-who="cotizar">
+            <div class="service-name">Tintes</div><div class="service-price">A cotizar</div><div class="service-who">Diana — especialista en color</div>
+          </button>
+        </div>
+      </div>
+      <div class="card" id="stylist-card" style="display:none">
+        <div class="card-title">¿Con quién prefieres?</div>
+        <div class="card-sub" id="stylist-sub">Elige a tu especialista</div>
+        <div class="stylist-row" id="stylist-row"></div>
+      </div>
+      <button class="btn btn-primary" id="btn-step1" disabled>Continuar → elegir fecha</button>
+    </div>
+
+    <!-- PASO 2 -->
+    <div class="screen" id="step-2">
+      <div class="card">
+        <div class="card-title">¿Cuándo te acomoda?</div>
+        <div class="card-sub">Selecciona fecha y hora disponible</div>
+        <div class="cal-nav">
+          <button id="cal-prev">‹</button>
+          <span class="cal-month" id="cal-month-label"></span>
+          <button id="cal-next">›</button>
+        </div>
+        <div class="cal-grid" id="cal-grid">
+          <div class="cal-dow">Lu</div><div class="cal-dow">Ma</div><div class="cal-dow">Mi</div>
+          <div class="cal-dow">Ju</div><div class="cal-dow">Vi</div><div class="cal-dow">Sá</div><div class="cal-dow">Do</div>
+        </div>
+      </div>
+      <div class="card card-wrap" id="time-card" style="display:none">
+        <div class="loading-overlay" id="slots-loading">Cargando horarios…</div>
+        <div class="section-label" id="selected-date-label">Horarios disponibles</div>
+        <div class="time-grid" id="time-grid"></div>
+      </div>
+      <button class="btn btn-primary" id="btn-step2" disabled>Continuar → tus datos</button>
+      <button class="btn btn-outline" id="btn-back-1">← Cambiar servicio</button>
+    </div>
+
+    <!-- PASO 3 -->
+    <div class="screen" id="step-3">
+      <div class="card">
+        <div class="card-title">Tus datos</div>
+        <div class="card-sub">Para confirmar tu reservación</div>
+        <div class="summary" id="booking-summary"></div>
+        <div class="field">
+          <label>Nombre completo</label>
+          <input type="text" id="inp-nombre" placeholder="Ej: Carlos Hernández">
+        </div>
+        <div class="field">
+          <label>Teléfono (WhatsApp)</label>
+          <input type="tel" id="inp-tel" placeholder="Ej: 3312345678" maxlength="10" inputmode="numeric">
+          <span id="tel-hint" style="font-size:11px;margin-top:4px;display:block"></span>
+        </div>
+        <div class="field" id="tinte-estilo-field" style="display:none">
+          <label>Estilo de tinte</label>
+          <select id="inp-tinte">
+            <option value="">Selecciona…</option>
+            <option>Color natural</option><option>Balayage</option>
+            <option>Mechas clásicas</option><option>Mechas californianas</option>
+            <option>Decoloración + tono</option><option>Otro / consultaré en cita</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Notas (opcional)</label>
+          <textarea id="inp-notas" placeholder="Algo que debamos saber…"></textarea>
+        </div>
+      </div>
+      <button class="btn btn-gold" id="btn-confirmar" disabled>Confirmar cita ✓</button>
+      <button class="btn btn-outline" id="btn-back-2">← Cambiar fecha</button>
+    </div>
+
+    <!-- CONFIRMACIÓN -->
+    <div class="screen" id="step-confirm">
+      <div class="card" style="text-align:center">
+        <div class="confirm-icon">✓</div>
+        <div class="card-title" style="text-align:center">¡Cita confirmada!</div>
+        <p style="font-size:13px;color:var(--muted);margin:6px 0 20px">Tu número de confirmación es:</p>
+        <div class="confirm-code" id="confirm-code-display">---</div>
+        <p class="confirm-hint">Guárdalo para cancelar o reagendar</p>
+        <div class="summary" id="confirm-summary"></div>
+      </div>
+      <button class="btn btn-outline" id="btn-nueva-cita">Agendar otra cita</button>
+    </div>
+
+    <!-- DIANA CONTACTO -->
+    <div class="screen" id="step-diana">
+      <div class="card" style="text-align:center;padding:28px 24px">
+        <div style="font-size:48px;margin-bottom:16px">🎨</div>
+        <div class="card-title" style="text-align:center;margin-bottom:12px">¡Estás en buenas manos!</div>
+        <p style="font-size:14px;line-height:1.7;color:var(--muted);margin-bottom:20px">
+          Nuestra especialista <strong style="color:var(--ink)">Diana</strong> te va a ayudar a llevar tu look al siguiente nivel.
+          Es indispensable hacerte algunas preguntas primero para poder cotizar tu tratamiento y después poder agendar tu cita.
+          Enseguida Diana se pondrá en contacto contigo. ¡Muchas gracias!
+        </p>
+        <div class="card" style="background:var(--warm);padding:20px;margin-bottom:0">
+          <div class="field" style="margin-bottom:14px;text-align:left">
+            <label>Tu nombre</label>
+            <input type="text" id="diana-nombre" placeholder="Ej: Carlos Hernández">
+          </div>
+          <div class="field" style="margin-bottom:0;text-align:left">
+            <label>Tu teléfono (WhatsApp)</label>
+            <input type="tel" id="diana-tel" placeholder="Ej: 3312345678" maxlength="10" inputmode="numeric">
+            <span id="diana-tel-hint" style="font-size:11px;margin-top:4px;display:block"></span>
+          </div>
+        </div>
+      </div>
+      <button class="btn btn-gold" id="btn-diana-enviar" disabled>Enviar mis datos a Diana ✓</button>
+      <button class="btn btn-outline" id="btn-diana-back">← Regresar</button>
+    </div>
+
+    <!-- DIANA CONFIRMACIÓN -->
+    <div class="screen" id="step-diana-ok">
+      <div class="card" style="text-align:center;padding:32px 24px">
+        <div class="confirm-icon">✓</div>
+        <div class="card-title" style="text-align:center;margin-bottom:8px">¡Listo!</div>
+        <p style="font-size:14px;line-height:1.7;color:var(--muted)">
+          Diana recibirá tus datos y se pondrá en contacto contigo a la brevedad para agendar tu cita de coloración.
+        </p>
+      </div>
+      <button class="btn btn-outline" id="btn-diana-nueva">← Volver al inicio</button>
+    </div>
+
+  </div>
+
+  <!-- TAB MI CITA -->
+  <div id="tab-mi-cita" style="display:none">
+    <div class="card">
+      <div class="card-title">Buscar mi cita</div>
+      <div class="card-sub">Ingresa tu número de confirmación o teléfono</div>
+      <div class="field">
+        <label>Número de confirmación o teléfono</label>
+        <input type="text" id="inp-buscar" placeholder="Ej: BP-2847 o tu teléfono">
+      </div>
+      <button class="btn btn-primary" id="btn-buscar">Buscar cita</button>
+    </div>
+    <div id="cita-result" style="display:none">
+      <div class="manage-cita">
+        <div class="manage-status" id="r-estado">Confirmada</div>
+        <div class="summary">
+          <div class="summary-row"><span class="summary-label">Servicio</span><span class="summary-val" id="r-servicio">—</span></div>
+          <div class="summary-row"><span class="summary-label">Especialista</span><span class="summary-val" id="r-estilista">—</span></div>
+          <div class="summary-row"><span class="summary-label">Fecha</span><span class="summary-val" id="r-fecha">—</span></div>
+          <div class="summary-row"><span class="summary-label">Hora</span><span class="summary-val" id="r-hora">—</span></div>
+          <div class="summary-row"><span class="summary-label">Nombre</span><span class="summary-val" id="r-nombre">—</span></div>
+        </div>
+      </div>
+      <div id="pendiente-msg" style="display:none;background:rgba(201,150,58,.08);border:1px solid rgba(201,150,58,.3);border-radius:6px;padding:12px 14px;margin-bottom:8px;font-size:13px;color:#7a6e62;line-height:1.6">
+        <strong style="color:#1a1410">Cita pendiente de confirmación</strong><br>
+        Diana revisará tu solicitud y se pondrá en contacto contigo para confirmar fecha y hora. Una vez confirmada podrás reagendarla desde aquí.
+      </div>
+      <button class="btn btn-outline" id="btn-toggle-reagendar">📅 Reagendar cita</button>
+      <div id="reschedule-panel">
+        <div class="card card-wrap" style="margin-top:12px">
+          <div class="loading-overlay" id="slots-loading-r">Cargando horarios…</div>
+          <div class="card-title" style="font-size:16px">Nueva fecha y hora</div>
+          <div class="card-sub">Elige cuándo prefieres</div>
+          <div class="cal-nav">
+            <button id="cal-prev-r">‹</button>
+            <span class="cal-month" id="cal-month-label-r"></span>
+            <button id="cal-next-r">›</button>
+          </div>
+          <div class="cal-grid" id="cal-grid-r">
+            <div class="cal-dow">Lu</div><div class="cal-dow">Ma</div><div class="cal-dow">Mi</div>
+            <div class="cal-dow">Ju</div><div class="cal-dow">Vi</div><div class="cal-dow">Sá</div><div class="cal-dow">Do</div>
+          </div>
+          <div id="time-grid-r-wrap" style="display:none;margin-top:12px">
+            <div class="section-label" id="r-date-label">Horarios</div>
+            <div class="time-grid" id="time-grid-r"></div>
+          </div>
+        </div>
+        <button class="btn btn-gold" id="btn-reagendar" disabled>Confirmar nuevo horario</button>
+      </div>
+      <button class="btn btn-danger" id="btn-cancelar">✕ Cancelar cita</button>
+    </div>
+    <div id="cita-not-found" style="display:none">
+      <div class="card" style="text-align:center;padding:32px 24px">
+        <div style="font-size:32px;margin-bottom:12px">🔍</div>
+        <div class="card-title" style="text-align:center;margin-bottom:6px">No encontramos tu cita</div>
+        <p style="font-size:13px;color:var(--muted)">Verifica el número o teléfono e intenta de nuevo.</p>
+      </div>
+    </div>
+  </div>
+</main>
+<div id="toast"></div>
+
+<script>
+(function() {
+  // ══════════════════════════════════════════
+  //  SUPABASE CONFIG — pega tu anon key abajo
+  // ══════════════════════════════════════════
+  const SUPABASE_URL = 'https://hhfjivzmglxzboajhksx.supabase.co';
+  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhoZmppdnptZ2x4emJvYWpoa3N4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwMzcxODMsImV4cCI6MjA4OTYxMzE4M30.SD0fpbqmHNlTt4BunX2sbotzwWCqJ70TP_Gd-4WOsnU';
+  const NEGOCIO_SLUG = 'donpepe';
+
+  // Mini cliente REST de Supabase (sin SDK)
+  const sb = {
+    headers: {
+      apikey: SUPABASE_KEY,
+      Authorization: 'Bearer ' + SUPABASE_KEY,
+      'Content-Type': 'application/json',
+    },
+    async get(table, qs) {
+      const r = await fetch(SUPABASE_URL + '/rest/v1/' + table + '?' + qs, { headers: this.headers });
+      if (!r.ok) throw new Error(await r.text());
+      return r.json();
+    },
+    async post(table, body) {
+      const r = await fetch(SUPABASE_URL + '/rest/v1/' + table, {
+        method: 'POST', headers: { ...this.headers, Prefer: 'return=representation' },
+        body: JSON.stringify(body)
+      });
+      if (!r.ok) throw new Error(await r.text());
+      return r.json();
+    },
+    async patch(table, id, body) {
+      const r = await fetch(SUPABASE_URL + '/rest/v1/' + table + '?id=eq.' + id, {
+        method: 'PATCH', headers: { ...this.headers, Prefer: 'return=representation' },
+        body: JSON.stringify(body)
+      });
+      if (!r.ok) throw new Error(await r.text());
+      return r.json();
+    }
+  };
+
+  // ══════════════════════════════════════════
+  //  CONSTANTES Y ESTADO
+  // ══════════════════════════════════════════
+  const MESES    = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  const MESES_ES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  const DIAS_ES  = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+
+  const BARBEROS = {
+    general: [
+      { nombre:'Rodrigo',    rol:'Barbero',               emoji:'✂️' },
+      { nombre:'Javier',     rol:'Barbero',               emoji:'✂️' },
+      { nombre:'Cualquiera', rol:'El primero disponible', emoji:'⭐' },
+    ],
+    tinte: [{ nombre:'Diana', rol:'Especialista en color', emoji:'🎨' }]
+  };
+
+  const st = {
+    negocioId: null,
+    servicio: null, precio: null, tipoServicio: null, estilista: null,
+    fecha: null, hora: null,
+    bookingMonth: null, rescheduleMonth: null,
+    rescheduleNewFecha: null, rescheduleNewHora: null,
+    foundCita: null,
+  };
+
+  const today = new Date(); today.setHours(0,0,0,0);
+  st.bookingMonth    = { year: today.getFullYear(), month: today.getMonth() };
+  st.rescheduleMonth = { year: today.getFullYear(), month: today.getMonth() };
+
+  // ══════════════════════════════════════════
+  //  UTILS
+  // ══════════════════════════════════════════
+  const $ = id => document.getElementById(id);
+  const fmtDate = s => {
+    if (!s) return '—';
+    const [y,m,d] = s.split('-').map(Number);
+    return DIAS_ES[new Date(y,m-1,d).getDay()] + ' ' + d + ' de ' + MESES_ES[m-1];
+  };
+  const rowHtml = (label, val) =>
+    '<div class="summary-row"><span class="summary-label">' + label +
+    '</span><span class="summary-val">' + val + '</span></div>';
+  const genCode = () => 'BP-' + Math.floor(10000 + Math.random() * 90000);
+
+  function showToast(msg, isError) {
+    const t = $('toast');
+    t.textContent = msg;
+    t.className = 'show' + (isError ? ' error' : '');
+    setTimeout(() => t.className = '', 3400);
+  }
+  function setLoading(id, on) {
+    const el = $(id); if (el) el.classList.toggle('show', on);
+  }
+  function soloDigitos(input) {
+    // Elimina cualquier caracter que no sea dígito — previene inyección
+    input.value = input.value.replace(/[^0-9]/g, '');
+  }
+  function validarTel(val) {
+    const digits = val.replace(/[^0-9]/g, '');
+    return digits.length === 10;
+  }
+  function telHint(inputId, hintId) {
+    const val = $(inputId).value.replace(/[^0-9]/g, '');
+    const hint = $(hintId);
+    if (!hint) return;
+    if (val.length === 0) { hint.textContent = ''; return; }
+    if (val.length < 10) { hint.textContent = 'Faltan ' + (10 - val.length) + ' dígitos'; hint.style.color = 'var(--error)'; }
+    else if (val.length > 10) { hint.textContent = 'Demasiados dígitos (' + val.length + ')'; hint.style.color = 'var(--error)'; }
+    else { hint.textContent = '✓ Número válido'; hint.style.color = 'var(--success)'; }
+  }
+  function checkForm() {
+    const nombre = $('inp-nombre').value.trim();
+    const tel = $('inp-tel').value;
+    telHint('inp-tel', 'tel-hint');
+    $('btn-confirmar').disabled = !(nombre && validarTel(tel));
+  }
+
+  // ══════════════════════════════════════════
+  //  INIT — cargar negocio desde Supabase
+  // ══════════════════════════════════════════
+  async function init() {
+    try {
+      const negocios = await sb.get('negocios', 'slug=eq.' + NEGOCIO_SLUG + '&select=id,nombre,activo');
+      if (!negocios.length || !negocios[0].activo) {
+        document.body.innerHTML = '<div style="text-align:center;padding:60px 24px;font-family:sans-serif"><h2>Servicio no disponible</h2><p style="color:#888;margin-top:8px">Este negocio no tiene una agenda activa en este momento.</p></div>';
+        return;
+      }
+      st.negocioId = negocios[0].id;
+      $('header-title').textContent = negocios[0].nombre;
+      document.title = 'Agenda — ' + negocios[0].nombre;
+    } catch(e) {
+      showToast('Error al conectar. Verifica tu anon key.', true);
+    }
+    renderCalendar('cal-grid',   'cal-month-label',   st.bookingMonth,    'booking');
+    renderCalendar('cal-grid-r', 'cal-month-label-r', st.rescheduleMonth, 'reschedule');
+  }
+
+  // ══════════════════════════════════════════
+  //  TABS
+  // ══════════════════════════════════════════
+  function switchTab(tab) {
+    $('tab-btn-nueva').classList.toggle('active', tab === 'nueva');
+    $('tab-btn-micita').classList.toggle('active', tab === 'micita');
+    $('tab-nueva').style.display   = tab === 'nueva'  ? 'block' : 'none';
+    $('tab-mi-cita').style.display = tab === 'micita' ? 'block' : 'none';
+  }
+
+  // ══════════════════════════════════════════
+  //  STEPS
+  // ══════════════════════════════════════════
+  function goStep(n) {
+    ['step-1','step-2','step-3','step-confirm','step-diana','step-diana-ok'].forEach(id => {
+      const el = $(id); if(el) el.classList.remove('active');
+    });
+    if (n === 4) $('step-confirm').classList.add('active');
+    else if (n === 'diana') $('step-diana').classList.add('active');
+    else if (n === 'diana-ok') $('step-diana-ok').classList.add('active');
+    else $('step-' + n).classList.add('active');
+    ['1','2','3'].forEach(i => {
+      const b = $('sn-' + i); b.classList.remove('active','done');
+      if (parseInt(i) < n) b.classList.add('done');
+      else if (parseInt(i) === n) b.classList.add('active');
+    });
+    if (n === 3) buildSummary();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  // ══════════════════════════════════════════
+  //  PASO 1: SERVICIO + ESTILISTA
+  // ══════════════════════════════════════════
+  function selectService(btn) {
+    document.querySelectorAll('.service-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    st.servicio = btn.dataset.service; st.precio = btn.dataset.price; st.tipoServicio = btn.dataset.who;
+    st.estilista = null; $('btn-step1').disabled = true;
+
+    if (st.tipoServicio === 'cotizar') {
+      // Tintes → flujo especial Diana, sin agendar
+      $('stylist-card').style.display = 'none';
+      $('tinte-estilo-field').style.display = 'none';
+      $('btn-step1').textContent = 'Continuar → contactar a Diana';
+      $('btn-step1').disabled = false;
+      return;
+    }
+
+    // Restaurar texto del botón por si venía de cotizar
+    $('btn-step1').textContent = 'Continuar → elegir fecha';
+
+    resetSlots(); // Cambió el servicio — limpiar horarios previos
+
+    if (st.tipoServicio === 'diana') {
+      // Camuflaje de canas → solo Diana, autoselect
+      $('stylist-sub').textContent = 'Especialista en coloración';
+      $('tinte-estilo-field').style.display = 'none';
+      $('stylist-card').style.display = 'block';
+      renderStylists(BARBEROS.tinte);
+      const first = $('stylist-row').querySelector('.stylist-btn');
+      if (first) { first.classList.add('selected'); st.estilista = 'Diana'; $('btn-step1').disabled = false; }
+    } else {
+      // Servicios generales
+      $('stylist-sub').textContent = 'Elige con quién prefieres';
+      $('tinte-estilo-field').style.display = 'none';
+      $('stylist-card').style.display = 'block';
+      renderStylists(BARBEROS.general);
+    }
+  }
+  function resetSlots() {
+    // Limpia horarios, deselecciona día y resetea estado de fecha/hora
+    st.fecha = null; st.hora = null;
+    $('time-card').style.display = 'none';
+    $('time-grid').innerHTML = '';
+    $('btn-step2').disabled = true;
+    // Quitar selección del día en calendario
+    document.querySelectorAll('#cal-grid .cal-day').forEach(c => c.classList.remove('selected'));
+  }
+
+  function renderStylists(list) {
+    const row = $('stylist-row'); row.innerHTML = '';
+    list.forEach(s => {
+      const btn = document.createElement('button');
+      btn.className = 'stylist-btn';
+      btn.innerHTML = '<div class="stylist-avatar">' + s.emoji + '</div>' +
+        '<div class="stylist-name">' + s.nombre + '</div><div class="stylist-role">' + s.rol + '</div>';
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.stylist-btn').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected'); st.estilista = s.nombre; $('btn-step1').disabled = false;
+        resetSlots();
+      });
+      row.appendChild(btn);
+    });
+  }
+
+  // ══════════════════════════════════════════
+  //  PASO 2: CALENDARIO
+  // ══════════════════════════════════════════
+  function renderCalendar(gridId, labelId, ms, mode) {
+    const { year, month } = ms;
+    $(labelId).textContent = MESES[month] + ' ' + year;
+    const grid = $(gridId);
+    while (grid.children.length > 7) grid.removeChild(grid.lastChild);
+    const offset = (new Date(year, month, 1).getDay() || 7) - 1;
+    const days = new Date(year, month + 1, 0).getDate();
+    for (let i = 0; i < offset; i++) { const e = document.createElement('div'); e.className = 'cal-day empty'; grid.appendChild(e); }
+    for (let d = 1; d <= days; d++) {
+      const cell = document.createElement('div');
+      const dt = new Date(year, month, d); const dow = dt.getDay();
+      const past = dt < today;
+      cell.className = 'cal-day' + (past ? ' disabled' : dow === 0 ? ' sunday' : dt.getTime() === today.getTime() ? ' today' : '');
+      cell.textContent = d;
+      if (!past && dow !== 0) {
+        const ds = year + '-' + String(month+1).padStart(2,'0') + '-' + String(d).padStart(2,'0');
+        cell.addEventListener('click', () => selectDay(cell, ds, dow, mode, gridId));
+      }
+      grid.appendChild(cell);
+    }
+  }
+
+  async function selectDay(cell, dateStr, dow, mode, gridId) {
+    document.querySelectorAll('#' + gridId + ' .cal-day').forEach(c => c.classList.remove('selected'));
+    cell.classList.add('selected');
+
+    // Slots base según día
+    const allSlots = dow === 6
+      ? ['11:00','11:30','12:00','12:30','13:00','13:30','14:00','14:30']
+      : ['11:00','11:30','12:00','12:30','13:00','13:30','14:00','14:30',
+         '15:00','15:30','16:00','16:30','17:00','17:30','18:00','18:30'];
+
+    // Filtrar slots pasados si es hoy
+    const nowDate = new Date();
+    const todayStr = nowDate.getFullYear() + '-' +
+      String(nowDate.getMonth()+1).padStart(2,'0') + '-' +
+      String(nowDate.getDate()).padStart(2,'0');
+    let slots = allSlots;
+    if (dateStr === todayStr) {
+      const nowMins = nowDate.getHours() * 60 + nowDate.getMinutes();
+      // Bloquear el slot actual y el siguiente (30 min de margen)
+      slots = allSlots.filter(s => {
+        const [h, m] = s.split(':').map(Number);
+        return (h * 60 + m) > nowMins + 30;
+      });
+    }
+
+    // Si no quedan slots, mostrar mensaje y no abrir panel de horarios
+    if (slots.length === 0) {
+      const timeCard = mode === 'booking' ? $('time-card') : $('time-grid-r-wrap');
+      if (mode === 'booking') {
+        $('time-card').style.display = 'block';
+        $('time-grid').innerHTML =
+          '<p style="grid-column:1/-1;font-size:13px;color:var(--muted);padding:8px 0">' +
+          'Este día ya no tiene horarios disponibles. Por favor elige otra fecha.</p>';
+        $('btn-step2').disabled = true;
+      } else {
+        $('time-grid-r-wrap').style.display = 'block';
+        $('time-grid-r').innerHTML =
+          '<p style="grid-column:1/-1;font-size:13px;color:var(--muted);padding:8px 0">' +
+          'Este día ya no tiene horarios disponibles. Por favor elige otra fecha.</p>';
+        $('btn-reagendar').disabled = true;
+      }
+      return;
+    }
+
+    if (mode === 'booking') {
+      st.fecha = dateStr; st.hora = null;
+      $('selected-date-label').textContent = fmtDate(dateStr);
+      $('time-card').style.display = 'block'; $('btn-step2').disabled = true;
+      await renderTimeSlots('time-grid', 'slots-loading', slots, dateStr, 'booking');
+    } else {
+      st.rescheduleNewFecha = dateStr; st.rescheduleNewHora = null;
+      $('r-date-label').textContent = fmtDate(dateStr);
+      $('time-grid-r-wrap').style.display = 'block'; $('btn-reagendar').disabled = true;
+      await renderTimeSlots('time-grid-r', 'slots-loading-r', slots, dateStr, 'reschedule');
+    }
+  }
+
+  // Consulta Supabase para saber qué slots están ocupados en esa fecha
+  async function renderTimeSlots(gridId, loadingId, slots, dateStr, mode) {
+    setLoading(loadingId, true);
+    const grid = $(gridId); grid.innerHTML = '';
+    let ocupados = {};
+    let bloqueados = new Set(); // slots bloqueados por el barbero
+    try {
+      if (st.negocioId) {
+        // Citas existentes
+        const rows = await sb.get('citas',
+          'negocio_id=eq.' + st.negocioId +
+          '&fecha=eq.' + dateStr +
+          '&estado=neq.Cancelada' +
+          '&select=hora,estilista');
+        rows.forEach(r => {
+          const h = r.hora.slice(0,5);
+          if (!ocupados[h]) ocupados[h] = [];
+          ocupados[h].push(r.estilista);
+        });
+        // Horarios bloqueados por el barbero
+        const bloqueos = await sb.get('horarios_bloqueados',
+          'negocio_id=eq.' + st.negocioId +
+          '&fecha=eq.' + dateStr +
+          '&select=hora');
+        bloqueos.forEach(r => bloqueados.add(r.hora.slice(0,5)));
+      }
+    } catch(e) { showToast('Error cargando horarios', true); }
+    setLoading(loadingId, false);
+    slots.forEach(slot => {
+      const btn = document.createElement('button');
+      btn.className = 'time-btn'; btn.textContent = slot;
+      const taken = ocupados[slot] || [];
+
+      // Lógica de disponibilidad por estilista individual:
+      // Diana/Camuflaje: ocupado si Diana ya tiene cita en ese slot
+      // General con estilista específico (Rodrigo o Javier): ocupado si ese estilista ya tiene cita
+      // "Cualquiera": ocupado solo si AMBOS Rodrigo y Javier están ocupados
+      let busy = false;
+      if (st.tipoServicio === 'diana' || st.tipoServicio === 'tinte') {
+        busy = taken.includes('Diana');
+      } else if (st.estilista === 'Rodrigo') {
+        busy = taken.includes('Rodrigo');
+      } else if (st.estilista === 'Javier') {
+        busy = taken.includes('Javier');
+      } else {
+        // "Cualquiera" — ocupado solo si no hay ningún barbero disponible
+        busy = taken.includes('Rodrigo') && taken.includes('Javier');
+      }
+      // Si el slot está bloqueado por el barbero, siempre ocupado independiente del estilista
+      if (bloqueados.has(slot)) busy = true;
+      if (busy) { btn.classList.add('busy'); btn.disabled = true; }
+      else {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('#' + gridId + ' .time-btn').forEach(b => b.classList.remove('selected'));
+          btn.classList.add('selected');
+          if (mode === 'booking') { st.hora = slot; $('btn-step2').disabled = false; }
+          else { st.rescheduleNewHora = slot; $('btn-reagendar').disabled = false; }
+        });
+      }
+      grid.appendChild(btn);
+    });
+  }
+
+  function changeMonth(delta, which) {
+    const key = which === 'r' ? 'rescheduleMonth' : 'bookingMonth';
+    let { year, month } = st[key]; month += delta;
+    if (month < 0) { month = 11; year--; } if (month > 11) { month = 0; year++; }
+    const now = new Date();
+    if (year < now.getFullYear() || (year === now.getFullYear() && month < now.getMonth())) return;
+    st[key] = { year, month };
+    renderCalendar(which==='r' ? 'cal-grid-r' : 'cal-grid', which==='r' ? 'cal-month-label-r' : 'cal-month-label', st[key], which==='r' ? 'reschedule' : 'booking');
+  }
+
+  // ══════════════════════════════════════════
+  //  PASO 3: CONFIRMAR (guarda en Supabase)
+  // ══════════════════════════════════════════
+  function buildSummary() {
+    $('booking-summary').innerHTML =
+      rowHtml('Servicio', st.servicio) + rowHtml('Especialista', st.estilista) +
+      rowHtml('Fecha', fmtDate(st.fecha)) + rowHtml('Hora', st.hora + ' hrs') +
+      '<div class="summary-row"><span class="summary-label">Precio</span>' +
+      '<span class="summary-val" style="color:var(--gold);font-weight:600">' + st.precio + '</span></div>';
+  }
+
+  async function confirmarCita() {
+    const nombre = $('inp-nombre').value.trim();
+    const tel    = $('inp-tel').value.replace(/[^0-9]/g, '').slice(0,10);
+    const notas  = $('inp-notas').value.trim();
+    const tinte  = $('inp-tinte').value;
+    // Si eligió "Cualquiera", asignar al primer barbero disponible en ese slot
+    let estilista = st.estilista;
+    if (st.estilista === 'Cualquiera') {
+      try {
+        const ocupadosSlot = await sb.get('citas',
+          'negocio_id=eq.' + st.negocioId +
+          '&fecha=eq.' + st.fecha +
+          '&hora=eq.' + st.hora + ':00' +
+          '&estado=neq.Cancelada' +
+          '&select=estilista');
+        const barbOcupados = ocupadosSlot.map(r => r.estilista);
+        estilista = barbOcupados.includes('Rodrigo') ? 'Javier' : 'Rodrigo';
+      } catch(e) { estilista = 'Rodrigo'; }
+    }
+    const code = genCode();
+    $('btn-confirmar').disabled = true; $('btn-confirmar').textContent = 'Guardando…';
+    try {
+      await sb.post('citas', {
+        negocio_id: st.negocioId, codigo: code,
+        nombre_cliente: nombre, telefono: tel,
+        servicio: st.servicio, estilista,
+        fecha: st.fecha, hora: st.hora + ':00',
+        estado: 'Confirmada', notas, estilo_tinte: tinte || null
+      });
+      $('confirm-code-display').textContent = code;
+      $('confirm-summary').innerHTML =
+        rowHtml('Nombre', nombre) + rowHtml('Servicio', st.servicio) +
+        rowHtml('Especialista', estilista) + rowHtml('Fecha', fmtDate(st.fecha)) +
+        rowHtml('Hora', st.hora + ' hrs');
+      $('steps-nav').style.display = 'none';
+      goStep(4);
+      showToast('¡Cita confirmada! Código: ' + code);
+    } catch(e) {
+      showToast('Error al guardar. Intenta de nuevo.', true);
+      $('btn-confirmar').disabled = false; $('btn-confirmar').textContent = 'Confirmar cita ✓';
+    }
+  }
+
+  function nuevaCita() {
+    st.servicio = st.estilista = st.fecha = st.hora = st.tipoServicio = null;
+    document.querySelectorAll('.service-btn,.stylist-btn').forEach(b => b.classList.remove('selected'));
+    $('stylist-card').style.display = 'none'; $('time-card').style.display = 'none';
+    $('btn-step1').disabled = true; $('btn-step2').disabled = true;
+    $('inp-nombre').value = ''; $('inp-tel').value = ''; $('inp-notas').value = ''; $('inp-tinte').value = '';
+    $('btn-confirmar').disabled = true; $('btn-confirmar').textContent = 'Confirmar cita ✓';
+    $('steps-nav').style.display = 'flex';
+    goStep(1);
+  }
+
+  // ══════════════════════════════════════════
+  //  MI CITA — buscar, reagendar, cancelar
+  // ══════════════════════════════════════════
+  async function buscarCita() {
+    const q = $('inp-buscar').value.trim().toUpperCase();
+    $('cita-result').style.display = 'none'; $('cita-not-found').style.display = 'none';
+    $('reschedule-panel').classList.remove('open');
+    const pm = $('pendiente-msg'); if(pm) pm.style.display = 'none';
+    $('btn-toggle-reagendar').style.display = 'block';
+    $('btn-buscar').disabled = true; $('btn-buscar').textContent = 'Buscando…';
+    try {
+      let rows = [];
+      if (q.startsWith('BP-')) {
+        rows = await sb.get('citas', 'codigo=eq.' + q + '&negocio_id=eq.' + st.negocioId + '&estado=neq.Cancelada');
+      } else {
+        rows = await sb.get('citas', 'telefono=eq.' + q + '&negocio_id=eq.' + st.negocioId + '&estado=neq.Cancelada&order=created_at.desc&limit=1');
+      }
+      if (rows.length) {
+        const c = rows[0]; st.foundCita = c;
+        st.servicio = c.servicio; st.estilista = c.estilista;
+        st.tipoServicio = c.servicio === 'Camuflaje de canas' ? 'diana' : 'general';
+        $('r-servicio').textContent  = c.servicio;
+        $('r-estilista').textContent = c.estilista;
+        $('r-fecha').textContent     = fmtDate(c.fecha);
+        $('r-hora').textContent      = c.hora.slice(0,5) + ' hrs';
+        $('r-nombre').textContent    = c.nombre_cliente;
+        $('r-estado').textContent    = c.estado;
+        $('cita-result').style.display = 'block';
+
+        // Controlar visibilidad del botón reagendar según estado
+        const puedeReagendar = c.estado === 'Confirmada' || c.estado === 'Reagendada';
+        const btnReagendar = $('btn-toggle-reagendar');
+        btnReagendar.style.display = puedeReagendar ? 'block' : 'none';
+
+        // Si es pendiente, mostrar mensaje informativo
+        const pendienteMsg = $('pendiente-msg');
+        if (pendienteMsg) pendienteMsg.style.display = puedeReagendar ? 'none' : 'block';
+      } else {
+        $('cita-not-found').style.display = 'block';
+      }
+    } catch(e) { showToast('Error al buscar', true); }
+    $('btn-buscar').disabled = false; $('btn-buscar').textContent = 'Buscar cita';
+  }
+
+  async function confirmarReagendar() {
+    const c = st.foundCita;
+    if (!c || !st.rescheduleNewFecha || !st.rescheduleNewHora) return;
+    $('btn-reagendar').disabled = true; $('btn-reagendar').textContent = 'Guardando…';
+    try {
+      await sb.patch('citas', c.id, {
+        fecha: st.rescheduleNewFecha, hora: st.rescheduleNewHora + ':00', estado: 'Reagendada'
+      });
+      c.fecha = st.rescheduleNewFecha; c.hora = st.rescheduleNewHora + ':00'; c.estado = 'Reagendada';
+      $('r-fecha').textContent  = fmtDate(c.fecha);
+      $('r-hora').textContent   = st.rescheduleNewHora + ' hrs';
+      $('r-estado').textContent = 'Reagendada';
+      $('reschedule-panel').classList.remove('open');
+      showToast('Cita reagendada correctamente ✓');
+    } catch(e) { showToast('Error al reagendar', true); }
+    $('btn-reagendar').disabled = false; $('btn-reagendar').textContent = 'Confirmar nuevo horario';
+  }
+
+  async function cancelarCita() {
+    if (!confirm('¿Seguro que quieres cancelar tu cita?')) return;
+    const c = st.foundCita; if (!c) return;
+    $('btn-cancelar').disabled = true; $('btn-cancelar').textContent = 'Cancelando…';
+    try {
+      await sb.patch('citas', c.id, { estado: 'Cancelada' });
+      $('cita-result').style.display = 'none';
+      showToast('Cita cancelada. ¡Hasta pronto!');
+    } catch(e) { showToast('Error al cancelar', true); }
+    $('btn-cancelar').disabled = false; $('btn-cancelar').textContent = '✕ Cancelar cita';
+  }
+
+  // ══════════════════════════════════════════
+  //  FLUJO DIANA — TINTES A COTIZAR
+  // ══════════════════════════════════════════
+  function checkDianaForm() {
+    const nombre = $('diana-nombre').value.trim();
+    const tel = $('diana-tel').value;
+    telHint('diana-tel', 'diana-tel-hint');
+    $('btn-diana-enviar').disabled = !(nombre && validarTel(tel));
+  }
+
+  async function enviarDatosDiana() {
+    const nombre = $('diana-nombre').value.trim();
+    const tel    = $('diana-tel').value.replace(/[^0-9]/g, '').slice(0,10);
+    $('btn-diana-enviar').disabled = true; $('btn-diana-enviar').textContent = 'Enviando…';
+    try {
+      // Guardamos en Supabase como cita especial de cotización
+      await sb.post('citas', {
+        negocio_id: st.negocioId,
+        codigo: 'DI-' + Math.floor(10000 + Math.random() * 90000),
+        nombre_cliente: nombre, telefono: tel,
+        servicio: 'Tintes — por cotizar', estilista: 'Diana',
+        fecha: new Date().toISOString().split('T')[0],
+        hora: '00:00:00', estado: 'Pendiente cotización',
+        notas: 'Cliente solicita contacto para cotizar tinte'
+      });
+      goStep('diana-ok');
+      showToast('¡Datos enviados! Diana te contactará pronto.');
+    } catch(e) {
+      showToast('Error al enviar. Intenta de nuevo.', true);
+      $('btn-diana-enviar').disabled = false; $('btn-diana-enviar').textContent = 'Enviar mis datos a Diana ✓';
+    }
+  }
+
+  function resetDiana() {
+    $('diana-nombre').value = ''; $('diana-tel').value = '';
+    $('btn-diana-enviar').disabled = true;
+    $('btn-diana-enviar').textContent = 'Enviar mis datos a Diana ✓';
+    $('steps-nav').style.display = 'flex';
+    $('btn-step1').textContent = 'Continuar → elegir fecha';
+    document.querySelectorAll('.service-btn').forEach(b => b.classList.remove('selected'));
+    goStep(1);
+  }
+
+  // ══════════════════════════════════════════
+  //  EVENT LISTENERS
+  // ══════════════════════════════════════════
+  $('tab-btn-nueva').addEventListener('click',  () => switchTab('nueva'));
+  $('tab-btn-micita').addEventListener('click', () => switchTab('micita'));
+  $('sn-1').addEventListener('click', () => goStep(1));
+  $('sn-2').addEventListener('click', () => { if (st.servicio && st.estilista) goStep(2); });
+  $('sn-3').addEventListener('click', () => { if (st.fecha && st.hora) goStep(3); });
+  document.querySelectorAll('.service-btn').forEach(b => b.addEventListener('click', () => selectService(b)));
+  $('btn-step1').addEventListener('click', () => {
+    if (st.tipoServicio === 'cotizar') { goStep('diana'); $('steps-nav').style.display = 'none'; }
+    else goStep(2);
+  });
+  $('btn-step2').addEventListener('click',   () => goStep(3));
+  $('btn-back-1').addEventListener('click', () => { resetSlots(); goStep(1); });
+  $('btn-back-2').addEventListener('click',  () => goStep(2));
+  $('btn-confirmar').addEventListener('click', confirmarCita);
+  $('btn-nueva-cita').addEventListener('click', nuevaCita);
+  $('inp-nombre').addEventListener('input', checkForm);
+  $('inp-tel').addEventListener('input', () => { soloDigitos($('inp-tel')); checkForm(); });
+  $('cal-prev').addEventListener('click',   () => changeMonth(-1,'b'));
+  $('cal-next').addEventListener('click',   () => changeMonth( 1,'b'));
+  $('cal-prev-r').addEventListener('click', () => changeMonth(-1,'r'));
+  $('cal-next-r').addEventListener('click', () => changeMonth( 1,'r'));
+  $('btn-buscar').addEventListener('click', buscarCita);
+  $('btn-toggle-reagendar').addEventListener('click', () => {
+    $('reschedule-panel').classList.toggle('open');
+    if ($('reschedule-panel').classList.contains('open'))
+      renderCalendar('cal-grid-r','cal-month-label-r', st.rescheduleMonth,'reschedule');
+  });
+  $('btn-reagendar').addEventListener('click', confirmarReagendar);
+  $('btn-cancelar').addEventListener('click',  cancelarCita);
+
+  // Diana listeners
+  const dNombre = $('diana-nombre'); if(dNombre) dNombre.addEventListener('input', checkDianaForm);
+  const dTel = $('diana-tel'); if(dTel) dTel.addEventListener('input', () => { soloDigitos($('diana-tel')); checkDianaForm(); });
+  const btnDE = $('btn-diana-enviar'); if(btnDE) btnDE.addEventListener('click', enviarDatosDiana);
+  const btnDB = $('btn-diana-back'); if(btnDB) btnDB.addEventListener('click', () => {
+    $('steps-nav').style.display = 'flex';
+    $('btn-step1').textContent = 'Continuar → elegir fecha';
+    goStep(1);
+  });
+  const btnDN = $('btn-diana-nueva'); if(btnDN) btnDN.addEventListener('click', resetDiana);
+
+  init();
+})();
+</script>
+</body>
+</html>
