@@ -236,8 +236,8 @@
     <div class="screen" id="step-diana">
       <div class="card" style="text-align:center;padding:28px 24px">
         <div style="font-size:48px;margin-bottom:16px">🎨</div>
-        <div class="card-title" style="text-align:center;margin-bottom:12px">¡Estás en buenas manos!</div>
-        <p style="font-size:14px;line-height:1.7;color:var(--muted);margin-bottom:20px">
+        <div class="card-title" id="diana-card-title" style="text-align:center;margin-bottom:12px">¡Estás en buenas manos!</div>
+        <p id="diana-msg-texto" style="font-size:14px;line-height:1.7;color:var(--muted);margin-bottom:20px">
           Nuestra especialista <strong style="color:var(--ink)">Diana</strong> te va a ayudar a llevar tu look al siguiente nivel.
           Es indispensable hacerte algunas preguntas primero para poder cotizar tu tratamiento y después poder agendar tu cita.
           Enseguida Diana se pondrá en contacto contigo. ¡Muchas gracias!
@@ -264,7 +264,7 @@
         <div class="confirm-icon">✓</div>
         <div class="card-title" style="text-align:center;margin-bottom:8px">¡Listo!</div>
         <p style="font-size:14px;line-height:1.7;color:var(--muted)">
-          Diana recibirá tus datos y se pondrá en contacto contigo a la brevedad para agendar tu cita de coloración.
+          <span id="diana-ok-texto">Diana recibirá tus datos y se pondrá en contacto contigo a la brevedad para agendar tu cita de coloración.</span>
         </p>
       </div>
       <button class="btn btn-outline" id="btn-diana-nueva">← Volver al inicio</button>
@@ -500,7 +500,26 @@
       const el = $(id); if(el) el.classList.remove('active');
     });
     if (n === 4) $('step-confirm').classList.add('active');
-    else if (n === 'diana') $('step-diana').classList.add('active');
+    else if (n === 'diana') {
+      $('step-diana').classList.add('active');
+      // Adaptar textos según plan
+      const msgEl = $('diana-msg-texto');
+      const okEl  = $('diana-ok-texto');
+      const titleEl = $('diana-card-title');
+      if (titleEl) titleEl.textContent = st.plan === 'basico' ? 'Solicitar cotización' : '¡Estás en buenas manos!';
+      if (msgEl) {
+        if (st.plan === 'basico') {
+          msgEl.innerHTML = 'Para poder cotizar tu tratamiento de color es necesario que uno de nuestros especialistas te haga algunas preguntas previas. Déjanos tus datos y nos pondremos en contacto contigo a la brevedad. ¡Muchas gracias!';
+        } else {
+          msgEl.innerHTML = 'Nuestra especialista <strong style="color:var(--ink)">Diana</strong> te va a ayudar a llevar tu look al siguiente nivel. Es indispensable hacerte algunas preguntas primero para poder cotizar tu tratamiento y después poder agendar tu cita. Enseguida Diana se pondrá en contacto contigo. ¡Muchas gracias!';
+        }
+      }
+      if (okEl) {
+        okEl.textContent = st.plan === 'basico'
+          ? 'Recibirás una llamada o mensaje a la brevedad para agendar tu cita de coloración.'
+          : 'Diana recibirá tus datos y se pondrá en contacto contigo a la brevedad para agendar tu cita de coloración.';
+      }
+    }
     else if (n === 'diana-ok') $('step-diana-ok').classList.add('active');
     else $('step-' + n).classList.add('active');
     ['1','2','3'].forEach(i => {
@@ -522,10 +541,12 @@
     st.estilista = null; $('btn-step1').disabled = true;
 
     if (st.tipoServicio === 'cotizar') {
-      // Tintes → flujo especial Diana, sin agendar
+      // Tintes → flujo especial, sin agendar
       $('stylist-card').style.display = 'none';
       $('tinte-estilo-field').style.display = 'none';
-      $('btn-step1').textContent = 'Continuar → contactar a Diana';
+      $('btn-step1').textContent = st.plan === 'basico'
+        ? 'Continuar → solicitar cotización'
+        : 'Continuar → contactar a Diana';
       $('btn-step1').disabled = false;
       return;
     }
@@ -914,7 +935,7 @@
         notas: 'Cliente solicita contacto para cotizar tinte'
       });
       goStep('diana-ok');
-      showToast('¡Datos enviados! Diana te contactará pronto.');
+      showToast(st.plan === 'basico' ? '¡Datos enviados! Te contactaremos pronto.' : '¡Datos enviados! Diana te contactará pronto.');
     } catch(e) {
       showToast('Error al enviar. Intenta de nuevo.', true);
       $('btn-diana-enviar').disabled = false; $('btn-diana-enviar').textContent = 'Enviar mis datos a Diana ✓';
