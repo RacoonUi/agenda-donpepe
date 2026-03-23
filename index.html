@@ -465,6 +465,16 @@
       st.prestadorNombre  = negocios[0].prestador_nombre || null;
       $('header-title').textContent = negocios[0].nombre;
       document.title = 'Agenda — ' + negocios[0].nombre;
+
+      // Plan básico: ocultar nombres de prestadores en tarjetas de servicio
+      if (st.plan === 'basico') {
+        document.querySelectorAll('.service-who').forEach(el => { el.style.display = 'none'; });
+      }
+
+      // Plan básico: ocultar nombres de prestadores en las tarjetas de servicio
+      if (st.plan === 'basico') {
+        document.querySelectorAll('.service-who').forEach(el => el.style.display = 'none');
+      }
     } catch(e) {
       showToast('Error al conectar. Verifica tu anon key.', true);
     }
