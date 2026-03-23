@@ -340,7 +340,7 @@
   // ══════════════════════════════════════════
   const SUPABASE_URL = 'https://hhfjivzmglxzboajhksx.supabase.co';
   const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhoZmppdnptZ2x4emJvYWpoa3N4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwMzcxODMsImV4cCI6MjA4OTYxMzE4M30.SD0fpbqmHNlTt4BunX2sbotzwWCqJ70TP_Gd-4WOsnU';
-  const NEGOCIO_SLUG = 'donpepe';
+  const NEGOCIO_SLUG = 'corteflow';
 
   // Mini cliente REST de Supabase (sin SDK)
   const sb = {
@@ -390,6 +390,8 @@
 
   const st = {
     negocioId: null,
+    plan: 'estandar',          // 'basico' | 'estandar' | 'pro'
+    prestadorNombre: null,     // solo plan básico
     servicio: null, precio: null, tipoServicio: null, estilista: null,
     fecha: null, hora: null,
     bookingMonth: null, rescheduleMonth: null,
@@ -453,12 +455,14 @@
   // ══════════════════════════════════════════
   async function init() {
     try {
-      const negocios = await sb.get('negocios', 'slug=eq.' + NEGOCIO_SLUG + '&select=id,nombre,activo');
+      const negocios = await sb.get('negocios', 'slug=eq.' + NEGOCIO_SLUG + '&select=id,nombre,activo,plan,prestador_nombre');
       if (!negocios.length || !negocios[0].activo) {
         document.body.innerHTML = '<div style="text-align:center;padding:60px 24px;font-family:sans-serif"><h2>Servicio no disponible</h2><p style="color:#888;margin-top:8px">Este negocio no tiene una agenda activa en este momento.</p></div>';
         return;
       }
-      st.negocioId = negocios[0].id;
+      st.negocioId        = negocios[0].id;
+      st.plan             = negocios[0].plan || 'estandar';
+      st.prestadorNombre  = negocios[0].prestador_nombre || null;
       $('header-title').textContent = negocios[0].nombre;
       document.title = 'Agenda — ' + negocios[0].nombre;
     } catch(e) {
@@ -523,18 +527,34 @@
 
     if (st.tipoServicio === 'diana') {
       // Camuflaje de canas → solo Diana, autoselect
-      $('stylist-sub').textContent = 'Especialista en coloración';
-      $('tinte-estilo-field').style.display = 'none';
-      $('stylist-card').style.display = 'block';
-      renderStylists(BARBEROS.tinte);
-      const first = $('stylist-row').querySelector('.stylist-btn');
-      if (first) { first.classList.add('selected'); st.estilista = 'Diana'; $('btn-step1').disabled = false; }
+      st.estilista = 'Diana'; // siempre Diana para tintes
+      if (st.plan === 'basico') {
+        // En básico no mostrar selector
+        $('stylist-card').style.display = 'none';
+        $('tinte-estilo-field').style.display = 'none';
+        $('btn-step1').disabled = false;
+      } else {
+        $('stylist-sub').textContent = 'Especialista en coloración';
+        $('tinte-estilo-field').style.display = 'none';
+        $('stylist-card').style.display = 'block';
+        renderStylists(BARBEROS.tinte);
+        const first = $('stylist-row').querySelector('.stylist-btn');
+        if (first) { first.classList.add('selected'); $('btn-step1').disabled = false; }
+      }
     } else {
       // Servicios generales
-      $('stylist-sub').textContent = 'Elige con quién prefieres';
-      $('tinte-estilo-field').style.display = 'none';
-      $('stylist-card').style.display = 'block';
-      renderStylists(BARBEROS.general);
+      if (st.plan === 'basico') {
+        // Plan básico: un solo prestador, asignar automáticamente
+        st.estilista = st.prestadorNombre || 'Rodrigo';
+        $('stylist-card').style.display = 'none';
+        $('tinte-estilo-field').style.display = 'none';
+        $('btn-step1').disabled = false;
+      } else {
+        $('stylist-sub').textContent = 'Elige con quién prefieres';
+        $('tinte-estilo-field').style.display = 'none';
+        $('stylist-card').style.display = 'block';
+        renderStylists(BARBEROS.general);
+      }
     }
   }
   function resetSlots() {
@@ -723,7 +743,8 @@
   // ══════════════════════════════════════════
   function buildSummary() {
     $('booking-summary').innerHTML =
-      rowHtml('Servicio', st.servicio) + rowHtml('Especialista', st.estilista) +
+      rowHtml('Servicio', st.servicio) +
+      rowHtml(st.plan === 'basico' ? 'Atendido por' : 'Especialista', st.estilista) +
       rowHtml('Fecha', fmtDate(st.fecha)) + rowHtml('Hora', st.hora + ' hrs') +
       '<div class="summary-row"><span class="summary-label">Precio</span>' +
       '<span class="summary-val" style="color:var(--gold);font-weight:600">' + st.precio + '</span></div>';
@@ -761,7 +782,7 @@
       $('confirm-code-display').textContent = code;
       $('confirm-summary').innerHTML =
         rowHtml('Nombre', nombre) + rowHtml('Servicio', st.servicio) +
-        rowHtml('Especialista', estilista) + rowHtml('Fecha', fmtDate(st.fecha)) +
+        rowHtml(st.plan === 'basico' ? 'Atendido por' : 'Especialista', estilista) + rowHtml('Fecha', fmtDate(st.fecha)) +
         rowHtml('Hora', st.hora + ' hrs');
       $('steps-nav').style.display = 'none';
       goStep(4);
