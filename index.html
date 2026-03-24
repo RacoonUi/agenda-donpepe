@@ -254,7 +254,7 @@
           </div>
         </div>
       </div>
-      <button class="btn btn-gold" id="btn-diana-enviar" disabled>Enviar mis datos a Diana ✓</button>
+      <button class="btn btn-gold" id="btn-diana-enviar" disabled>Continuar →</button>
       <button class="btn btn-outline" id="btn-diana-back">← Regresar</button>
     </div>
 
@@ -938,14 +938,14 @@
       showToast(st.plan === 'basico' ? '¡Datos enviados! Te contactaremos pronto.' : '¡Datos enviados! Diana te contactará pronto.');
     } catch(e) {
       showToast('Error al enviar. Intenta de nuevo.', true);
-      $('btn-diana-enviar').disabled = false; $('btn-diana-enviar').textContent = 'Enviar mis datos a Diana ✓';
+      $('btn-diana-enviar').disabled = false; $('btn-diana-enviar').textContent = 'Continuar →';
     }
   }
 
   function resetDiana() {
     $('diana-nombre').value = ''; $('diana-tel').value = '';
     $('btn-diana-enviar').disabled = true;
-    $('btn-diana-enviar').textContent = 'Enviar mis datos a Diana ✓';
+    $('btn-diana-enviar').textContent = 'Continuar →';
     $('steps-nav').style.display = 'flex';
     $('btn-step1').textContent = 'Continuar → elegir fecha';
     document.querySelectorAll('.service-btn').forEach(b => b.classList.remove('selected'));
